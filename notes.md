@@ -1,13 +1,11 @@
-# Django fundamentals
+## Chapter 1 Django fundamentals
 
-## Preparation
+### Preparation
 
 - 安装最新版本 python
 - `pip3 install pipenv`
 - 最新版本 VSCode
 - VSCode Extension: python
-
-## Creating first django project
 
 ### 虚拟环境
 
@@ -83,4 +81,101 @@ urlpatterns = [
 - 添加`"debug_toolbar",`到 project settings.py 的 INATALLED_APPS 中。并添加`"debug_toolbar.middleware.DebugToolbarMiddleware"`到 MIDDLEWARE 列表中。最后，添加一个新的设置`INTERNAL_IPS = ["127.0.0.1",]`
 - 添加`path("__debug__/", include("debug_toolbar.urls"))`到 project 的 urls.py 中，别忘了`import debug_toolbar`
 
-### Data modelling
+## Chapter 2 Modelling
+
+### Creating models
+
+- 创建 class，变量=`model.<适合的field>(<attributes>)`
+- 搜索 Django field types 确定你需要的数据类型
+- django 会自动生成 primary key，但如果你想要设置某一变量为 primary key，可以在定义其 attribute 时加上`primary_key=True`
+
+### Choice Field
+
+- 比如某个数据存储的时候用缩写，但是又想记录它对应的全称
+
+```python
+    MEMBERSHIP_BRONZE = 'B'
+    MEMBERSHIP_SILVER = 'S'
+    MEMBERSHIP_GOLD = 'G'
+
+    MEMBERSHIP_CHOICES = [
+        (MEMBERSHIP_BRONZE, 'Bronze'),
+        (MEMBERSHIP_SILVER, 'Silver'),
+        (MEMBERSHIP_GOLD, 'Gold'),
+    ]
+    membership = models.CharField(max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE)
+```
+
+### DateTimeField
+
+- `auto_now_add`：这个参数用于在模型的实例首次创建时自动设置当前的日期和时间。一旦设置，在后续的保存操作中，这个字段的值不会再自动更新。
+- `auto_now`：这个参数用于每次保存模型实例时自动更新当前的日期和时间。无论是在新建还是更新实例时，只要调用了.save()方法，这个字段的值就会被更新为当前的时间。
+
+### Defining one-to-one relationships
+
+- 先定义 parent，再定义 child
+- 比如在 Address 的 model 中将其与 customer 链接 `customer = models.OneToOneField(Customer, on_delete=models.CASCADE, primary_key=True)`
+
+- 此处 on_delete，`models.CASCADE`表示如果该顾客信息被删除，address 也被删除。`models.SET_NULL`表示顾客被删除时将 address 保留但设置为 Null。`models.SET_DEFAULT`回到初始设置。`models.PROTECT`表示必须先删除 child(address)才能删除 parent(customer)。
+
+### Defining one-to-many relationships
+
+- 假设一个顾客可以有多个地址，`customer = models.ForeignKey(Customer, on_delete=models.CASCADE)`。类型改成 ForeignKey，去掉 primary_key 选项
+
+### Defining many-to-many relationships
+
+- 比如每个 product 可能有多个 promotion，每种 promotion 也可以应用在多个 product 上
+- 在 Product 类中定义`promotions = models.ManyToManyField(Promotion)`
+
+### Resolving circular relationships
+
+```
+class Collection(models.Model):
+    ...
+    featured_product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, related_name='+')
+
+class Product(models.Model):
+    ...
+    collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
+    ...
+```
+
+- `on_delete=models.SET_NULL`：这个选项定义了当关联的对象（在你的示例中是 Product）被删除时，外键字段（featured_product）应如何响应。models.SET_NULL 指定当关联的 Product 对象被删除时，featured_product 字段的值将被设置为 null，也就是没有任何关联的对象。为了使用 models.SET_NULL，必须将外键字段的 null 参数设置为 True，这表明该字段允许存储 null 值。
+- `related_name='+'`：用于指定从关联对象回到这个对象时使用的名称。例如，如果 Product 模型中有一个指向 Store 的外键，通常可以通过 product.store 访问该 Store 实例，反过来也可以使用 store.product_set 来访问所有关联的 Product 实例。设置 related_name='+' 实际上是告诉 Django，我们不需要反向关系。这意味着从 Product 模型无法通过一个简单的属性访问到关联的 featured_product 对象。这样做通常是为了避免命名冲突或者简化模型间的关系，尤其在不需要使用反向查询时。
+
+### Generic Relationships
+
+- 在 Django 中，Generic Relationships（通用关系）允许一个模型与多个其他模型建立关联，而不是只与一个特定模型关联。这种机制通过使用 Django 的内容类型框架（content types framework）来实现，它能够让一个模型引用 Django 项目中的任何模型实例。
+
+- 在一些情况下，你可能需要让一个模型能够关联到多种不同的模型。例如，考虑一个评论系统，你希望用户可以对博客帖子、图片或其他用户进行评论。在这种情况下，你需要一个评论模型，它可以关联到多种不同的对象。
+
+- Django 通过以下三个主要组件实现通用关系：
+
+1. **ContentType**：这是一个 Django 模型，它为项目中的每个模型类维护一个记录。它可以让你引用任何其他模型。
+
+2. **GenericForeignKey**：这是一个特殊的外键，它不是直接指向一个特定的模型，而是结合使用 `ContentType` 和模型实例的 ID 来引用任何对象。
+
+3. **GenericRelation**：这个字段不是必须的，但它允许反向查询从关联对象回到含有 GenericForeignKey 的对象。
+
+- 假设你有一个 `Comment` 模型，它可以关联到不同类型的对象，比如 `Book` 和 `Movie`：
+
+```python
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.db import models
+
+class Comment(models.Model):
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    text = models.TextField()
+
+class Book(models.Model):
+    title = models.CharField(max_length=100)
+
+class Movie(models.Model):
+    title = models.CharField(max_length=100)
+```
+
+- 在这个例子中，`Comment` 可以关联到任何模型。你只需要为 `Comment` 模型添加 `content_type` 和 `object_id` 字段，并通过 `GenericForeignKey` 定义 `content_object` 属性。
