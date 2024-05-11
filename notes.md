@@ -179,3 +179,32 @@ class Movie(models.Model):
 ```
 
 - 在这个例子中，`Comment` 可以关联到任何模型。你只需要为 `Comment` 模型添加 `content_type` 和 `object_id` 字段，并通过 `GenericForeignKey` 定义 `content_object` 属性。
+
+## Chapter 3 Database
+
+### Creating migrations
+
+- `python manage.py makemigrations` 对 model 做出改变后都要运行，它会变成一串记录就像 git log 一样
+- `Command + t`快速查找 workspace 中的某个 class，method，variables 等等
+
+### Running migrations
+
+- `python manage.py migrate`
+- vscode 默认使用 sqlite3，是一个非常简易的 database。我们之后会使用 mysql
+- 先安装 sqlite 插件 -> command palette -> sqlite: open database -> 选择相应 database，可以在 explorer 下端找到 sqlite explorer。右键即可 show table
+
+### Customizing Database Schema
+
+- 搜索`django model metadata`
+- 它位于某个 model 的 class 内部
+
+```python
+    class Meta:
+        db_table = "store_customers" # 将表命名为store_customer
+        indexes = [models.Index(fields=["last_name", "first_name"])] # 将姓名结合并生成一个索引
+```
+
+### Reverting migrations
+
+- 找到你想回到的 migration 序号`python manage.py migrate store 0003`，手动删除不想要的那些 migration 和 code
+- 如果有 git 作为版本控制，`git reset --hard HEAD~1`
