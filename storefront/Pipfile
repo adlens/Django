@@ -4,11 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "*"
+django = "==5.0.6"
 django-debug-toolbar = "*"
 mysqlclient = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.12"
+python_version = "3.9"

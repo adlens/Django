@@ -179,6 +179,22 @@ class Movie(models.Model):
 ```
 
 - 在这个例子中，`Comment` 可以关联到任何模型。你只需要为 `Comment` 模型添加 `content_type` 和 `object_id` 字段，并通过 `GenericForeignKey` 定义 `content_object` 属性。
+- 实例:
+
+```python
+# 创建一个书本和作者
+book = Book.objects.create(title="Django for Professionals")
+author = Author.objects.create(name="William S. Vincent")
+
+# 标记书本
+tag1 = TaggedItem.objects.create(tag='django', content_object=book)
+
+# 标记作者
+tag2 = TaggedItem.objects.create(tag='expert', content_object=author)
+
+# 查询使用特定标签的书本
+django_books = TaggedItem.objects.filter(tag='django', content_type=ContentType.objects.get_for_model(Book))
+```
 
 ## Chapter 3 Database
 
@@ -263,3 +279,7 @@ DATABASES = {
 ### Generating Dummy Data
 
 -`mockaroo.com`将生成的数据存成 sql 文件拽进 datagrip 中，选择正确的 schema，全选并运行
+
+## Chapter 4 Django ORM
+
+### Resetting database
