@@ -208,3 +208,58 @@ class Movie(models.Model):
 
 - 找到你想回到的 migration 序号`python manage.py migrate store 0003`，手动删除不想要的那些 migration 和 code
 - 如果有 git 作为版本控制，`git reset --hard HEAD~1`
+
+### Installing MySQL and Connecting to MySql
+
+- 下载 MySQL Community Server 并安装
+- 下载 DataGrip，选择 database 为 mysql，user 为 root，密码为 mysql 的密码
+- 右键 localhost，选择 new->query console,可以在其中输入 SQL 命令
+- `CREATE DATABASE storefront`
+
+### Using MySQL in Django
+
+- `pipenv install mysqlclient`
+- `mysql -u root -p` 输入 mysql 的密码
+- 退出 mysql 为 ctrl + D
+- 在 settings.py 的 DATABASES 中作出如下修改
+
+```
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "storefront",
+        "HOST": "localhost",
+        "USER": "root",
+        "PASSWORD": "password"
+    }
+}
+```
+
+- 再运行`python manage.py migrate`
+
+### Running custom SQL
+
+- 在 django 中使用 sql 语言更新数据库
+- 创建一个新的空的 migration`python manage.py makemigrations store --empty`
+- 打开新创建的文件进行编辑，并运行 migrate
+
+```python
+    operations = [
+        migrations.RunSQL(
+            """
+            INSERT INTO store_collection (title)
+                          VALUES ('collection1')
+            """, # 运行migrate的时候执行
+            """
+            DELETE FROM store_collection
+            WHERE title='collection1'
+            """, # revert migrate的时候执行
+        )
+    ]
+```
+
+- revert migrate `python manage.py migrate store <前一个编号>`
+
+### Generating Dummy Data
+
+-`mockaroo.com`将生成的数据存成 sql 文件拽进 datagrip 中，选择正确的 schema，全选并运行
