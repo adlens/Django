@@ -282,4 +282,16 @@ DATABASES = {
 
 ## Chapter 4 Django ORM
 
-### Resetting database
+### Managers and QuerySets
+
+- views.py 文件
+
+```python
+def say_hello(request):
+    query_set = Product.objects.all() # 创建一个query，但不会被马上evaluate
+    # list(query_set)
+    # query_set[0]
+    for product in query_set: # 这三行都能唤醒query
+        print(product) # 可以用toolbar在网页上查看sql信息，已经获取了所有的product信息
+    return render(request, "hello.html", {"name": "Mosh"})
+```
