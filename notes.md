@@ -337,3 +337,11 @@ from django.db.models import Q
 from django.db.models import F
     queryset = Product.objects.filter(inventory=F("unit_price"))
 ```
+
+### Sorting
+
+- 升序排列`queryset = Product.objects.order_by("title")`
+- 降序`order_by("-title")`或者`order_by("title").reverse()`
+- 按多个 field 排序`order_by('unit_price',"-title")`
+- 找到排在第一位的 object`order_by('unit_price')[0]`或者`earliest('unit_price')`
+- 找到最后一位的 object`order_by('-unit_price')[0]`或者`latest('unit_price')`
