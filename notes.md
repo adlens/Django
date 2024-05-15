@@ -302,3 +302,15 @@ def say_hello(request):
 - `.all()`返回整个 table，若只要一条信息可以用`Product.objects.get(id=1)` 或者`get(pk=...)`用 primary key 查找。get 返回的是一个 object 而不再是 query。
 - get 的问题是：如果找不到该条信息就会报错，可以用 try except 来解决。也可以用 filter 来创建一个 query，`product = Product.objects.filter(pk=0).first()`可以实现和 get 一样的效果，但找不到信息时只会令 product 为 None 而不会报错。
 - 如果只是检查是否有数据符合 filter 要求`Product.objects.filter(pk=0).exists()`，返回值为 boolean
+
+### Filtering Objects
+
+- 找价格为 20 的产品`queryset = Product.objects.filter(unit_price=20)`
+- 价格高于 20 的产品`queryset = Product.objects.filter(unit_price__gt=20)` greater than。gte=greater than or equal to
+- `filter(unit_price__range=(20, 30))`请求价格在 20-30 之间的产品
+- `filter(collection__id=1)` collection id 为 1 的所有产品
+- `filter(collection__id__range=(1, 2, 3))` collection id 为 1-3 的所有产品
+- `filter(title__contains='coffee')` 标题中包含 coffee 字样的，case sensitive
+- `filter(title__icontains='coffee')` 标题中包含 coffee 字样的，not case sensitive
+- `filter(desctription__isnull=True)` 简介为空的
+- 具体语法可以搜索`queryset api`
