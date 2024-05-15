@@ -237,6 +237,7 @@ django_books = TaggedItem.objects.filter(tag='django', content_type=ContentType.
 - `pipenv install mysqlclient`
 - `mysql -u root -p` 输入 mysql 的密码
 - 退出 mysql 为 ctrl + D
+- 有时候启动 mysql 可以用`sudo /usr/local/mysql/bin/mysqld_safe --user=mysql &`
 - 在 settings.py 的 DATABASES 中作出如下修改
 
 ```
@@ -295,3 +296,9 @@ def say_hello(request):
         print(product) # 可以用toolbar在网页上查看sql信息，已经获取了所有的product信息
     return render(request, "hello.html", {"name": "Mosh"})
 ```
+
+### Retrieving Objects
+
+- `.all()`返回整个 table，若只要一条信息可以用`Product.objects.get(id=1)` 或者`get(pk=...)`用 primary key 查找。get 返回的是一个 object 而不再是 query。
+- get 的问题是：如果找不到该条信息就会报错，可以用 try except 来解决。也可以用 filter 来创建一个 query，`product = Product.objects.filter(pk=0).first()`可以实现和 get 一样的效果，但找不到信息时只会令 product 为 None 而不会报错。
+- 如果只是检查是否有数据符合 filter 要求`Product.objects.filter(pk=0).exists()`，返回值为 boolean
