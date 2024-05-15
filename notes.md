@@ -345,3 +345,8 @@ from django.db.models import F
 - 按多个 field 排序`order_by('unit_price',"-title")`
 - 找到排在第一位的 object`order_by('unit_price')[0]`或者`earliest('unit_price')`
 - 找到最后一位的 object`order_by('-unit_price')[0]`或者`latest('unit_price')`
+
+### Limiting Results
+
+- 前五个 product`Product.objects.all()[:5]`
+- 5-10 个 product`Product.objects.all()[5:10]`
