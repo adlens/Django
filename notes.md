@@ -314,3 +314,17 @@ def say_hello(request):
 - `filter(title__icontains='coffee')` 标题中包含 coffee 字样的，not case sensitive
 - `filter(desctription__isnull=True)` 简介为空的
 - 具体语法可以搜索`queryset api`
+
+### Complex Lookups Using Q Objects
+
+- Products: inventory < 10 AND price < 20 `filter(inventory__lt=10, unit_price__lt=20)`或者使用 chain `Product.objects.filter(inventory__lt=10).filter(unit_price__lt=20)`
+- Products: inventory < 10 OR price < 20
+
+```python
+from django.db.models import Q
+...
+    queryset = Product.objects.filter(Q(inventory__lt=10) | Q(unit_price__lt=20))
+...
+```
+
+- Q 中`&`表示与, `|`表示或，`~`表示非
