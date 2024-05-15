@@ -328,3 +328,12 @@ from django.db.models import Q
 ```
 
 - Q 中`&`表示与, `|`表示或，`~`表示非
+
+### Referencing Fields using F Objects
+
+- Products: inventory = price
+
+```python
+from django.db.models import F
+    queryset = Product.objects.filter(inventory=F("unit_price"))
+```
