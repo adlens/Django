@@ -237,7 +237,7 @@ django_books = TaggedItem.objects.filter(tag='django', content_type=ContentType.
 - `pipenv install mysqlclient`
 - `mysql -u root -p` 输入 mysql 的密码
 - 退出 mysql 为 ctrl + D
-- 有时候启动 mysql 可以用`sudo /usr/local/mysql/bin/mysqld_safe --user=mysql &`
+- 有时候启动 mysql 可以用``
 - 在 settings.py 的 DATABASES 中作出如下修改
 
 ```
@@ -350,3 +350,34 @@ from django.db.models import F
 
 - 前五个 product`Product.objects.all()[:5]`
 - 5-10 个 product`Product.objects.all()[5:10]`
+
+### Selecting Fields to Query
+
+- 相当于 sql 中的 select ...
+- `queryset = Product.objects.values("id", "title")`
+- 可以用两个"\_"来查询相关表中的 fields
+- `queryset = Product.objects.values("id", "title", "collection__title")` 相当于
+
+```SQL
+SELECT `store_product`.`id`,
+       `store_product`.`title`,
+       `store_collection`.`title`
+FROM `store_product`
+INNER JOIN `store_collection`
+ON (`store_product`.`collection_id` = `store_collection`.`id`)
+```
+
+- 此处的每一个 object result 都是一个 dictionary，包含三个 key: title, id, collection\_\_title 和他们对应的 values
+- 如果将`values`换成`values_list`返回的就会是一个个 tuple，只记录 values 没有 key
+- exercise: select products that have been ordered and sort them by title
+
+```
+from store.models import Product, OrderItem
+
+
+def say_hello(request):
+    queryset = OrderItem.objects.values("product_id").distinct()
+    queryset2 = Product.objects.filter(id__in=queryset).order_by("title")
+
+    return render(request, "hello.html", {"name": "Mosh", "products": list(queryset2)})
+```
